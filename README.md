@@ -94,7 +94,7 @@ interface ProjectMembership {
 6. free 플랜 팀의 문서는 공유 설정 변경 불가 (Deny)
 7. publicLinkEnabled가 true인 문서는 누구나 볼 수 있음 (Allow)
 
-**과제**:
+**과제** (아래 코드들은 어디까지나 예시이므로 자유롭게 설계해주세요):
 
 ```markdown
 1. Expression DSL의 구조를 설계하세요
@@ -119,8 +119,7 @@ interface ProjectMembership {
 
 ## Part 2: 핵심 컴포넌트 구현
 
-선호하는 언어(TypeScript, Python, Go, Java 등)를 선택하여 다음을 구현하세요.
-아래 코드들은 어디까지나 예시이므로 자유롭게 설계해주세요.
+선호하는 언어(TypeScript, Python, Go, Java 등)를 선택하여 다음을 구현하세요. 아래 코드들은 어디까지나 예시이므로 자유롭게 설계해주세요.
 
 ### 2.1 Expression DSL 및 Evaluator 구현 (예시)
 
