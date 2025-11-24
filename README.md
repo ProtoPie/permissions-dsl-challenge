@@ -94,7 +94,9 @@ interface ProjectMembership {
 6. free 플랜 팀의 문서는 공유 설정 변경 불가 (Deny)
 7. publicLinkEnabled가 true인 문서는 누구나 볼 수 있음 (Allow)
 
-**과제** (아래 코드들은 어디까지나 예시이므로 자유롭게 설계해주세요):
+**과제**:
+
+아래 코드들은 어디까지나 예시이므로 자유롭게 설계해주세요
 
 ```markdown
 1. Expression DSL의 구조를 설계하세요
@@ -103,25 +105,23 @@ interface ProjectMembership {
    - 필드 참조 방식
 
 2. Policy 클래스/인터페이스 구조를 설계하세요
-   - 필수 속성들 (effect, permissions, applyFilter 등)
+   - 속성들 (effect, permissions, applyFilter 등)
    - 위 7개 정책 예시를 실제 DSL로 표현해보세요
 
 3. 시스템 아키텍처를 다이어그램으로 그리세요
-   - PolicyEngine, ApplyEvaluator, DataLoader의 역할과 관계
+   - 각 컴포넌트의 역할과 관계
    - 데이터 흐름도
-
-4. 데이터 로딩 전략을 설명하세요
-   - 어떤 데이터를 언제 로드할지
-   - 지연 로딩(Lazy Loading)을 어떻게 구현할지
 ```
 
 ---
 
-## Part 2: 핵심 컴포넌트 구현
+## Part 2: 핵심 컴포넌트 구현 (선택)
 
-선호하는 언어(TypeScript, Python, Go, Java 등)를 선택하여 다음을 구현하세요. 아래 코드들은 어디까지나 예시이므로 자유롭게 설계해주세요.
+선호하는 언어(TypeScript, Python, Go, Java 등)를 선택하여 다음을 구현하세요. Codex, Claude Code 같은 AI 코딩 에이전트를 사용하여 구현하는 경우 그 과정을 자세하게 기록해주세요.
 
-### 2.1 Expression DSL 및 Evaluator 구현 (예시)
+### 2.1 Expression DSL 및 Evaluator 구현 (선택)
+
+아래 코드들은 어디까지나 예시이므로 자유롭게 설계해주세요.
 
 ```typescript
 // 예시: TypeScript로 구현할 경우의 타입 정의
@@ -155,7 +155,7 @@ function evaluateExpression(
 **구현 요구사항**:
 - `and`, `or`, `not` 연산자 처리
 - 필드 참조 (`{ ref: "field.name" }`) 처리
-- 데이터가 부족한 경우 `null` 반환 (지연 로딩 지원)
+- 데이터가 부족한 경우 `null` 반환
 - 타입 비교 (문자열, 숫자, boolean, null, Date)
 
 **테스트 케이스 작성**:
@@ -191,7 +191,7 @@ const testCases = [
 ];
 ```
 
-### 2.2 Policy 시스템 구현
+### 2.2 Policy 시스템 구현 (선택)
 
 ```typescript
 interface Policy {
@@ -231,103 +231,9 @@ class PolicyEngine {
 - DENY 정책이 ALLOW보다 우선순위 높음
 - 정책 평가 순서 최적화 (가능한 빨리 결정)
 
-### 2.3 데이터 로더 구현
-
-```typescript
-interface DataLoader {
-  load(
-    resource: any,
-    user: any,
-    requiredFields: Set<string>
-  ): Promise<Record<string, Record<string, Value>>>;
-}
-
-class MockDataLoader implements DataLoader {
-  async load(
-    resource: any,
-    user: any,
-    requiredFields: Set<string>
-  ): Promise<Record<string, Record<string, Value>>> {
-    // TODO: 구현
-    // - requiredFields를 파싱하여 어떤 테이블의 어떤 필드가 필요한지 파악
-    // - 테스트용 mock 데이터 반환
-    // - 실제로는 데이터베이스 쿼리를 수행
-  }
-}
-```
-
 ---
 
-## Part 3: 최적화 및 확장
-
-### 3.1 성능 최적화
-
-다음 중 하나 이상을 구현하거나 설계하세요:
-
-**옵션 A: 지연 로딩 및 단락 평가**
-```typescript
-// 데이터를 단계적으로 로드하면서 정책 평가
-// 조기 종료 가능한 경우 즉시 반환
-```
-
-**옵션 B: 의존성 분석**
-```typescript
-// Expression에서 필요한 모든 필드를 추출하는 함수
-function extractRequiredFields(expr: Expression): Set<string> {
-  // TODO: 구현
-}
-```
-
-**옵션 C: 결과 캐싱**
-```typescript
-// 동일한 (resource, user, permission) 조합에 대해 캐싱
-// TTL 및 무효화 전략 설계
-```
-
-### 3.2 디버깅 기능
-
-```typescript
-interface EvaluationTrace {
-  policyName: string;
-  effect: 'allow' | 'deny';
-  expression: Expression;
-  result: boolean | null;
-  evaluatedAt: Date;
-  dataUsed: Record<string, any>;
-  subTraces?: EvaluationTrace[]; // and/or/not 내부 평가
-}
-
-function evaluateWithTrace(
-  expr: Expression,
-  data: Record<string, Record<string, Value>>
-): { result: boolean | null; trace: EvaluationTrace } {
-  // TODO: 구현
-  // 평가 과정을 상세히 기록하여 디버깅 가능하게 만들기
-}
-```
-
-### 3.3 정적 분석 (선택)
-
-```typescript
-// 잠재적 버그를 찾는 린터 구현
-function lintPolicy(policy: Policy): string[] {
-  const errors: string[] = [];
-
-  // 체크할 내용:
-  // 1. 필드 참조 비교 시 null 체크 누락
-  // 2. 항상 true/false인 조건
-  // 3. 도달 불가능한 조건
-  // 4. 순환 참조
-
-  // TODO: 구현
-
-  return errors;
-}
-```
-
----
-
-## Part 4: 종합 시나리오 테스트
+## Part 3: 종합 시나리오 테스트 (선택)
 
 다음 시나리오들에 대해 시스템이 올바르게 동작하는지 테스트를 작성하세요:
 
@@ -469,25 +375,21 @@ const document = {
 
 다음을 포함하여 제출하세요:
 
-1. **설계 문서** (`DESIGN.md`)
+1. **설계 문서 (필수)** (`DESIGN.md`)
    - 시스템 아키텍처 다이어그램
    - DSL 문법 정의
    - 주요 설계 결정 및 트레이드오프
 
-2. **구현 코드**
+2. **구현 코드 (선택)**
    - 소스 코드 (적절한 디렉토리 구조)
    - 단위 테스트
    - 통합 테스트 (시나리오 기반)
 
-3. **README.md**
+3. **README.md (선택)**
    - 프로젝트 개요
    - 설치 및 실행 방법
    - 예제 사용법
    - 개선 가능한 부분 및 제약사항
-
-4. **성능 분석** (선택)
-   - 벤치마크 결과
-   - 최적화 전후 비교
 
 ---
 
@@ -501,5 +403,3 @@ const document = {
   - Policy-based Access Control (PBAC)
   - Domain Specific Language (DSL)
   - Expression Evaluation
-  - Lazy Loading
-  - Static Analysis
